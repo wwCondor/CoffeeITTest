@@ -13,7 +13,7 @@ class DiscoverViewController: UIViewController {
     
     let sliderManager = SliderManager()
     
-//    var placesOfInterest: [POI] = [POI]()
+    var placesOfInterest: [POI] = [POI]()
     
     lazy var tapScreen: UIView = {
         let tapScreen = UIView()
@@ -86,6 +86,7 @@ class DiscoverViewController: UIViewController {
                         return
                     }
                     for place in places {
+                        self.placesOfInterest.append(place)
                         self.createAnnotation(place: place)
                     }
 //                    print("Places: \(self.placesOfInterest)")
@@ -101,7 +102,7 @@ class DiscoverViewController: UIViewController {
         annotation.title = place.name
         annotation.subtitle = place.type.name
         let coordinates = place.location.coordinates
-        annotation.coordinate = CLLocationCoordinate2D(latitude: coordinates[0], longitude: coordinates[1])
+        annotation.coordinate = CLLocationCoordinate2D(latitude: coordinates[1], longitude: coordinates[0])
         mapView.addAnnotation(annotation)
     }
 
