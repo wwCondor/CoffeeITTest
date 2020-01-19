@@ -13,7 +13,7 @@ class DiscoverViewController: UIViewController {
     
     let sliderManager = SliderManager()
     
-    var placesOfInterest: [POIData] = [POIData]()
+//    var placesOfInterest: [POI] = [POI]()
     
     lazy var tapScreen: UIView = {
         let tapScreen = UIView()
@@ -74,7 +74,6 @@ class DiscoverViewController: UIViewController {
         super.viewDidLoad()
         setupView()
         getPlacesOfInterest()
-        createAnnotation(place: POIData.compassMykonos)
     }
     
     private func getPlacesOfInterest() {
@@ -87,10 +86,9 @@ class DiscoverViewController: UIViewController {
                         return
                     }
                     for place in places {
-                        self.placesOfInterest.append(place)
-//                        self.createAnnotation(place: place)
+                        self.createAnnotation(place: place)
                     }
-                    print("Places: \(self.placesOfInterest)")
+//                    print("Places: \(self.placesOfInterest)")
                 }
             }
         } else {
@@ -98,7 +96,7 @@ class DiscoverViewController: UIViewController {
         }
     }
     
-    private func createAnnotation(place: POIData) {
+    private func createAnnotation(place: POI) {
         let annotation = MKPointAnnotation()
         annotation.title = place.name
         annotation.subtitle = place.type.name

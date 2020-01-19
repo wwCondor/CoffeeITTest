@@ -35,10 +35,10 @@ extension UIView {
     }
 }
 
-extension JSONDecoder {
-    static var dataDecoder: JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return decoder
-    }
-}
+//extension JSONDecoder {
+//    static var dataDecoder: JSONDecoder {
+//        let decoder = JSONDecoder()
+//        decoder.keyDecodingStrategy = .convertFromSnakeCase
+//        return decoder
+//    }
+//}

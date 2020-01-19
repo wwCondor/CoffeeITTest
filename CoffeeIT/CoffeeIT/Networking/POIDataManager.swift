@@ -9,16 +9,16 @@
 import Foundation
 
 struct POIDataManager {
-    typealias POICompletionHandler = ([POIData]?, Error?) -> Void
+    typealias POICompletionHandler = ([POI]?, Error?) -> Void
     
     static func getPOI(completion: @escaping POICompletionHandler) {
-        let url = URL(string: "https://api.lovemetender.com/pois")!
         
-        var allPOI = [POIData]()
-        Networker.request(url: url) { (result) in
+        var allPOI = [POI]()
+        Networker.request(url: "https://api.lovemetender.com/pois") { (result) in
             switch result {
             case .success(let data):
-                guard let places = try? JSONDecoder.dataDecoder.decode([POIData].self, from: data) else { return }
+                let decoder = JSONDecoder()
+                guard let places = try? decoder.decode([POI].self, from: data) else { return }
                 for place in places {
                     allPOI.append(place)
                 }

@@ -8,36 +8,35 @@
 
 import Foundation
 
-struct POIData: Codable {
-//    let id: String
-//    let tenderService: Bool
-    let openingHours: [OpeningHours] // Displayed in preview
-    let type: EstablishmentType // Determines look
+struct POI: Codable {
+    let _id: String
+    let tenderService: Bool
+    let openingHours: [OpeningHour]
+    let type: Type
     let name: String
-//    let coverImage: String
+    let coverImage: String
     let location: Location
-//    let description: String
-//    let tenderType: Int
+    let shortDescription: String
     let city: String
     
-    static let compassMykonos: POIData = POIData(openingHours: [OpeningHours(day: "Monday", startTime: "09:00", endtime: "01.30")],
-                                                  type: EstablishmentType(name: "Restaurant"),
-                                                  name: "Compass Mykonos",
-                                                  location: Location(coordinates: [25.329118, 37.461028]),
-                                                  city: "Mykonos")
+//    static let compassMykonos: POIData = POIData(openingHours: [OpeningHours(day: "Monday", startTime: "09:00", endtime: "01.30")],
+//                                                  type: EstablishmentType(name: "Restaurant"),
+//                                                  name: "Compass Mykonos",
+//                                                  location: Location(coordinates: [25.329118, 37.461028]),
+//                                                  city: "Mykonos")
 }
 
-struct OpeningHours: Codable {
-//    let id: String
-    let day: String
-    let startTime: String
-    let endtime: String
+struct OpeningHour: Codable {
+    let _id: String?
+    let day: String?
+    let startTime: String?
+    let endTime: String?
 }
 
-struct EstablishmentType: Codable {
+struct Type: Codable {
     let name: String
-//    let color: String
-//    let image: String
+    let color: String
+    let image: String
 }
 
 struct Location: Codable {
