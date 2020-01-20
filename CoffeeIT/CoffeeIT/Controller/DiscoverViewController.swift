@@ -8,12 +8,18 @@
 
 import UIKit
 import MapKit
+import CoreLocation
 
 class DiscoverViewController: UIViewController {
     
     let sliderManager = SliderManager()
     
     var placesOfInterest: [POI] = [POI]()
+    
+    private let locationManager = CLLocationManager()
+    var lastLocation: CLLocation?
+    var locationAuthorized: Bool = false
+    let regionInMeters: Double = 2500
     
     lazy var tapScreen: UIView = {
         let tapScreen = UIView()
@@ -30,7 +36,6 @@ class DiscoverViewController: UIViewController {
         mapView.isUserInteractionEnabled = true
         mapView.isZoomEnabled = true
         mapView.translatesAutoresizingMaskIntoConstraints = false
-        mapView.delegate = self
         return mapView
     }()
     
@@ -39,10 +44,11 @@ class DiscoverViewController: UIViewController {
         return gradientView
     }()
     
-    private lazy var mainButton: CustomButton = {
-        let mainButton = CustomButton(type: .custom)
-        mainButton.addTarget(self, action: #selector(mainButtonTapped(sender:)), for: .touchUpInside)
-        return mainButton
+    private lazy var weatherView: WeatherView = {
+        let weatherView = WeatherView()
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(weatherViewTapped(sender:)))
+        weatherView.addGestureRecognizer(tapGesture)
+        return weatherView
     }()
     
     private lazy var ibizaButton: CustomButton = {
@@ -73,12 +79,23 @@ class DiscoverViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
+        
+        mapView.delegate = self
+        
         getPlacesOfInterest()
+        checkLocationServices()
+    }
+    
+    private func setupLocationManager() {
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        locationManager.distanceFilter = 25
     }
     
     private func getPlacesOfInterest() {
         let connectionPossible = Reachability.checkReachable()
         if connectionPossible == true {
+            print("Obtaining POI data")
             POIDataManager.getPOI { (data, error) in
                 DispatchQueue.main.async {
                     guard let places = data else {
@@ -89,11 +106,33 @@ class DiscoverViewController: UIViewController {
                         self.placesOfInterest.append(place)
                         self.createAnnotation(place: place)
                     }
+                    print("POI data obtained")
 //                    print("Places: \(self.placesOfInterest)")
                 }
             }
         } else {
             presentAlert(description: NetworkingError.noReachability.localizedDescription, viewController: self)
+        }
+    }
+    
+    func getWeatherData(latitude: Double, longitude: Double) {
+        print("Obtaining Weather Data")
+        WeatherDataManager.getCurrentWeather(latitude: latitude, longitude: longitude) { (data, error) in
+            DispatchQueue.main.async {
+                guard let weather = data else {
+                    self.presentAlert(description: NetworkingError.noData.localizedDescription, viewController: self)
+                    return
+                }
+                self.weatherView.temperatureInfoBox.weatherIcon.image = weather.currently.iconImage
+                self.weatherView.temperatureInfoBox.topLabel.text = "\(Int(weather.currently.temperature))°C"
+                self.weatherView.temperatureInfoBox.bottomLabel.text = "\(weather.currently.summary)"
+                
+                self.weatherView.windInfoBox.weatherIcon.image = UIImage(named: .windDirection)
+                self.weatherView.windInfoBox.topLabel.text = "\(weather.currently.windSpeed)KT"
+                self.weatherView.windInfoBox.topLabel.text = "\(weather.currently.windBearing)"
+                
+                print("Weather data obtained")
+            }
         }
     }
     
@@ -111,7 +150,7 @@ class DiscoverViewController: UIViewController {
         
         view.addSubview(mapView)
         view.addSubview(gradientView)
-        view.addSubview(mainButton)
+        view.addSubview(weatherView)
         view.addSubview(ibizaButton)
         view.addSubview(listButton)
         view.addSubview(filterButton)
@@ -145,10 +184,10 @@ class DiscoverViewController: UIViewController {
             listButton.trailingAnchor.constraint(equalTo: gradientView.trailingAnchor, constant: -Constant.buttonPadding),
             listButton.heightAnchor.constraint(equalToConstant: Constant.smallButtonHeight),
             
-            mainButton.topAnchor.constraint(equalTo: ibizaButton.bottomAnchor, constant: Constant.buttonSpacing),
-            mainButton.leadingAnchor.constraint(equalTo: gradientView.leadingAnchor, constant: Constant.buttonPadding),
-            mainButton.trailingAnchor.constraint(equalTo: gradientView.trailingAnchor, constant: -Constant.buttonPadding),
-            mainButton.heightAnchor.constraint(equalToConstant: Constant.largeButtonHeight),
+            weatherView.topAnchor.constraint(equalTo: ibizaButton.bottomAnchor, constant: Constant.buttonSpacing),
+            weatherView.leadingAnchor.constraint(equalTo: gradientView.leadingAnchor, constant: Constant.buttonPadding),
+            weatherView.trailingAnchor.constraint(equalTo: gradientView.trailingAnchor, constant: -Constant.buttonPadding),
+            weatherView.heightAnchor.constraint(equalToConstant: Constant.largeButtonHeight),
             
             filterButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -Constant.buttonSpacing),
             filterButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Constant.buttonPadding),
@@ -189,7 +228,7 @@ class DiscoverViewController: UIViewController {
         }
     }
     
-    @objc private func mainButtonTapped(sender: UIButton) {
+    @objc private func weatherViewTapped(sender: UIButton) {
         let islandViewController = IslandViewController()
         islandViewController.modalPresentationStyle = .fullScreen
         navigationController?.present(islandViewController, animated: true, completion: nil)
@@ -214,6 +253,48 @@ class DiscoverViewController: UIViewController {
         },
             completion: nil)
     }
+    
+    private func checkLocationServices() {
+        print("Checking Location Servives")
+        if CLLocationManager.locationServicesEnabled() {
+            print("Location Services are Enabled")
+            setupLocationManager()
+            checkLocationAuthorization()
+        } else {
+            print("Location Services are Disabled")
+            presentFailedPermissionActionSheet(description: AuthorizationError.locationServicesDisabled.localizedDescription , viewController: self)
+        }
+    }
+    
+    private func checkLocationAuthorization() {
+        print("Checking Location Authorization")
+        switch CLLocationManager.authorizationStatus() {
+            
+        case .notDetermined:
+            print("Requesting Authorization")
+            locationManager.requestWhenInUseAuthorization()
+        case .restricted, .denied:
+            locationAuthorized = false
+            print("Authorization restricted or denied")
+            presentFailedPermissionActionSheet(description: AuthorizationError.locationAuthorizationDenied.localizedDescription , viewController: self)
+        case .authorizedAlways, .authorizedWhenInUse:
+            locationAuthorized = true
+            print("Authorized")
+            mapView.showsUserLocation = true
+            centerMapOnUserLocation()
+            locationManager.startUpdatingLocation()
+            locationManager.startUpdatingHeading()
+        @unknown default:
+            break
+        }
+    }
+    
+    private func centerMapOnUserLocation() {
+        if let location = locationManager.location?.coordinate {
+            let region = MKCoordinateRegion.init(center: location, latitudinalMeters: regionInMeters, longitudinalMeters: regionInMeters)
+            mapView.setRegion(region, animated: true)
+        }
+    }
 }
 
 extension DiscoverViewController: MKMapViewDelegate {
@@ -223,5 +304,21 @@ extension DiscoverViewController: MKMapViewDelegate {
             preview.titleLabel.text = "\(labelText)"
             presentLocationPreview()
         }
+    }
+}
+
+extension DiscoverViewController: CLLocationManagerDelegate {
+    // Informs delegate new location data is available and updates map
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let currentLocation = locations.last else { return }
+        let center = CLLocationCoordinate2D(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
+        let region = MKCoordinateRegion.init(center: center, latitudinalMeters: regionInMeters, longitudinalMeters: regionInMeters)
+        mapView.setRegion(region, animated: true)
+        getWeatherData(latitude: currentLocation.coordinate.latitude, longitude: currentLocation.coordinate.longitude)
+    }
+    
+    // Gets called when authorization status changes
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        checkLocationAuthorization()
     }
 }

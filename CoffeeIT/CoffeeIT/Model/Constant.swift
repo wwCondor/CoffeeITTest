@@ -22,4 +22,7 @@ struct Constant {
     static let filterIconInsets: CGFloat             = 15
     
     static let previewHeigth: CGFloat                = Constant.largeButtonHeight + Constant.smallButtonHeight
+    
+    static let weatherInfoViewPadding: CGFloat       = 20
+    static let weatherIconSize: CGFloat              = 40
 }

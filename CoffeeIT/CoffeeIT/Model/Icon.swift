@@ -35,4 +35,6 @@ extension UIImage.Name {
     static let tree              = UIImage.Name(name: "Tree")
     static let discover          = UIImage.Name(name: "Discover")
     static let profile           = UIImage.Name(name: "Profile")
+    static let windDirection     = UIImage.Name(name: "WindDirection")
+
 }

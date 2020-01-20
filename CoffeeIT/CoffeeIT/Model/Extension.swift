@@ -19,6 +19,17 @@ extension UIViewController {
         alert.addAction(confirmation)
         viewController.present(alert, animated: true, completion: nil)
     }
+    
+    func presentFailedPermissionActionSheet(description: String, viewController: UIViewController) {
+        let actionSheet = UIAlertController(title: nil, message: description, preferredStyle: .actionSheet)
+        
+        actionSheet.addAction(UIAlertAction(title: "Ok, take me to Settings", style: .default, handler: { (action) in
+            if let settingsURL = URL(string: UIApplication.openSettingsURLString + Bundle.main.bundleIdentifier!) {
+                UIApplication.shared.open(settingsURL, options: [:], completionHandler: nil)}}))
+        
+        actionSheet.addAction(UIAlertAction(title: "Thanks, but I'll go to settings myself", style: .cancel, handler: { (action) in }))
+        viewController.present(actionSheet, animated: true, completion: nil)
+    }
 }
 
 extension UIView {
@@ -35,10 +46,8 @@ extension UIView {
     }
 }
 
-//extension JSONDecoder {
-//    static var dataDecoder: JSONDecoder {
-//        let decoder = JSONDecoder()
-//        decoder.keyDecodingStrategy = .convertFromSnakeCase
-//        return decoder
+//extension Double {
+//    func rounded() -> Double {
+//        
 //    }
 //}
