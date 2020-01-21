@@ -24,10 +24,10 @@ class CoffeeITTests: XCTestCase {
     }
     
     // Test API call 
-    func testDataManager() {
+    func testPOIDataManager() {
         let expectation = self.expectation(description: "allPlaces.count =! 0")
         var responseError: Error?
-        var allPlaces: [POIData]?
+        var allPlaces: [POI]?
         POIDataManager.getPOI { (data, error) in
             guard let places = data else {
                 responseError = error
@@ -37,9 +37,28 @@ class CoffeeITTests: XCTestCase {
             expectation.fulfill()
         }
 
-        waitForExpectations(timeout: 10, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
         XCTAssertNil(responseError, "Error")
         XCTAssertNotNil(allPlaces)
+    }
+    
+    func testWeatherDataManager() {
+        let expectation = self.expectation(description: "weather =! nil")
+        var responseError: Error?
+        var weatherData: Weather?
+        let coordinate: [Double] = [52.09083, 5.12222]
+        WeatherDataManager.getCurrentWeather(latitude: coordinate[0], longitude: coordinate[1], completion: { (data, error) in
+            guard let weather = data else {
+                responseError = error
+                return
+            }
+            weatherData = weather
+            expectation.fulfill()
+        })
+
+        waitForExpectations(timeout: 5, handler: nil)
+        XCTAssertNil(responseError, "Error")
+        XCTAssertNotNil(weatherData)
     }
 
     func testPerformanceExample() {

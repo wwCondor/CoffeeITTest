@@ -123,10 +123,11 @@ class DiscoverViewController: UIViewController {
                     self.presentAlert(description: NetworkingError.noData.localizedDescription, viewController: self)
                     return
                 }
+                
                 self.weatherView.temperatureInfoBox.weatherIcon.image = weather.currently.iconImage
                 self.weatherView.temperatureInfoBox.topLabel.text = "\(Int(weather.currently.temperature))°C"
                 self.weatherView.temperatureInfoBox.bottomLabel.text = "\(weather.currently.summary)"
-                
+
                 self.weatherView.windInfoBox.weatherIcon.image = UIImage(named: .windDirection)
                 self.weatherView.windInfoBox.topLabel.text = "\(weather.currently.windSpeed)KT"
                 self.weatherView.windInfoBox.topLabel.text = "\(weather.currently.windBearing)"
@@ -135,6 +136,16 @@ class DiscoverViewController: UIViewController {
             }
         }
     }
+    
+//    private func displayWeather(using viewModel: CurrentWeatherViewModel) {
+//        weatherView.temperatureInfoBox.weatherIcon.image = viewModel.icon
+//        weatherView.temperatureInfoBox.topLabel.text = "\(Int(viewModel.currently.temperature)/1.8)°C"
+//        weatherView.temperatureInfoBox.bottomLabel.text = "\(viewModel.currently.summary)"
+//
+//        weatherView.windInfoBox.weatherIcon.image = UIImage(named: .windDirection)
+//        weatherView.windInfoBox.topLabel.text = "\(viewModel.currently.windSpeed)KT"
+//        weatherView.windInfoBox.topLabel.text = "\(viewModel.currently.windBearing)"
+//    }
     
     private func createAnnotation(place: POI) {
         let annotation = MKPointAnnotation()

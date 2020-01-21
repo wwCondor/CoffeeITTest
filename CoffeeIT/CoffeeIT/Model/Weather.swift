@@ -41,3 +41,23 @@ extension CurrentWeather {
 struct APIKey {
     static let darkSkyKey: String = "a0f662b5bcd5015b177c687e72eb10e7"
 }
+
+//struct CurrentWeatherViewModel {
+//    let temperature: String
+//    let summary: String
+//    let icon: UIImage
+//    let windSpeed: Double
+//    let windBearing: Double
+//
+//    init(model: CurrentWeather) {
+//        let celsius = (model.temperature)/1.8
+//        let roundedTemperature = Int(celsius)
+//        self.temperature = "\(roundedTemperature)ºC"
+//        self.summary = model.summary
+//        self.icon = model.iconImage
+//
+//        self.windSpeed = model.windSpeed
+//        self.windBearing = model.windBearing
+//    }
+//
+//}
